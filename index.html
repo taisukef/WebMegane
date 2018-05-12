@@ -34,16 +34,36 @@ window.onload = function() {
 		const cw2 = cw / 2;
 		const caspect = ch / cw2;
 		const vaspect = vh / vw;
-		const vh2 = vw * caspect;
-		if (vh2 > vh) {
-			const cy = (vh2 - vh) / 2 / (vw / cw2);
-			const ch2 = cw2 * vaspect;
-			g.drawImage(video, 0, 0, vw, vh, 0, cy, cw2, ch2);
-			g.drawImage(video, 0, 0, vw, vh, cw2, cy, cw2, ch2);
+		
+		const fitwidth = caspect < vaspect; // auto fit screen
+//		const fitwidth = true; // force fit width
+//		const fitwidth = false; // force fit height
+		
+		if (fitwidth) {
+			const vh2 = vw * caspect;
+			if (vh2 > vh) {
+				const cy = (vh2 - vh) / 2 / (vw / cw2);
+				const ch2 = cw2 * vaspect;
+				g.drawImage(video, 0, 0, vw, vh, 0, cy, cw2, ch2);
+				g.drawImage(video, 0, 0, vw, vh, cw2, cy, cw2, ch2);
+			} else {
+				const vy = (vh - vh2) / 2;
+				g.drawImage(video, 0, vy, vw, vh2, 0, 0, cw2, ch);
+				g.drawImage(video, 0, vy, vw, vh2, cw2, 0, cw2, ch);
+			}
 		} else {
-			const vy = (vh - vh2) / 2;
-			g.drawImage(video, 0, vy, vw, vh2, 0, 0, cw2, ch);
-			g.drawImage(video, 0, vy, vw, vh2, cw2, 0, cw2, ch);
+			const vw2 = vh / caspect;
+			if (vw2 > vw) {
+				const cx = (vw2 - vw) / 2 / (vh / ch);
+				const cw3 = ch / vaspect;
+				console.log(cx);
+				g.drawImage(video, 0, 0, vw, vh, cx, 0, cw3, ch);
+				g.drawImage(video, 0, 0, vw, vh, cw2 + cx, 0, cw3, ch);
+			} else {
+				const vx = (vw - vw2) / 2;
+				g.drawImage(video, vx, 0, vw2, vh, 0, 0, cw2, ch);
+				g.drawImage(video, vx, 0, vw2, vh, cw2, 0, cw2, ch);
+			}
 		}
 		requestAnimationFrame(draw);
 	};
