@@ -11,7 +11,14 @@
 window.onload = function() {
 	const USE_CAMERA_FRONT = false;
 //	var videoop = USE_CAMERA_FRONT ? true : { facingMode : { exact : "environment" } };
-	var videoop = USE_CAMERA_FRONT ? true : { facingMode : { ideal : "environment" } };
+//	var videoop = USE_CAMERA_FRONT ? true : { facingMode : { ideal : "environment" } };
+	var videoop = USE_CAMERA_FRONT ? true : {
+		facingMode : { ideal : "environment" },
+		width: { min: 640, ideal: 1920 },
+		height: { min: 480, ideal: 1080 }
+//		width: { min: 640, ideal: 1280, max: 1920 },
+//		height: { min: 480, ideal: 720, max: 1080 }
+	};
 	const medias = { audio: false, video: videoop };
 	
 //	dump(navigator.mediaDevices.getSupportedConstraints());
