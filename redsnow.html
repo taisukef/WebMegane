@@ -198,8 +198,10 @@ original
 	 * windowがリサイズしました。
 	 */
 	function resize() {
-		var width = container.offsetWidth;
-		var height = container.offsetHeight;
+//		var width = container.offsetWidth;
+//		var height = container.offsetHeight;
+		var width = window.innerWidth;
+		var height = window.innerHeight;
 
 		camera.aspect = width / height;
 		camera.updateProjectionMatrix();
@@ -357,17 +359,17 @@ body {
 	height: 100%;
 }
 #container {
+	z-index: 4;
 	position: absolute;
 	top: 0;
 	left: 0;
-	z-index: 4;
 	opacity: 0.5;
 }
 </style>
 </head>
 <body>
-<canvas id="canvas"></canvas>
 <div id="container"></div>
+<canvas id="canvas"></canvas>
 <video id="video" autoplay playsinline></video>
 </body>
 </html>
