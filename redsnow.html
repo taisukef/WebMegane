@@ -14,11 +14,11 @@ original
 <meta property="og:image" content="redrain.png">
 <link rel="apple-touch-icon" href="redrain.png"/>
 
-<script src="http://cdnjs.cloudflare.com/ajax/libs/three.js/r71/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r71/three.min.js"></script>
 <script src="js/StereoEffect.js"></script>
 <script src="js/DeviceOrientationControls.js"></script>
 <script src="js/OrbitControls.js"></script>
-<script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/1.17.0/TweenMax.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.17.0/TweenMax.min.js"></script>
 <script>
 // 
 (function() {
@@ -341,9 +341,11 @@ body {
 	overflow: hidden;
 }
 #video {
+	position: absolute;
 	display: block;
 	width: 100%;
 	transform: scale(0.01);
+	z-index: -1;
 }
 #canvas {
 	z-index: 0;
@@ -365,7 +367,7 @@ body {
 </head>
 <body>
 <canvas id="canvas"></canvas>
-<video id="video" autoplay playsinline></video>
 <div id="container"></div>
+<video id="video" autoplay playsinline></video>
 </body>
 </html>
