@@ -42,8 +42,8 @@ window.onload = function() {
 		const caspect = ch / cw2;
 		const vaspect = vh / vw;
 		
-		const fitwidth = caspect < vaspect; // auto fit screen
-//		const fitwidth = true; // force fit width
+/*		const fitwidth = caspect < vaspect; // auto fit screen */
+		const fitwidth = true; // force fit width
 //		const fitwidth = false; // force fit height
 		
 		if (fitwidth) {
@@ -77,8 +77,8 @@ window.onload = function() {
 	draw();
 	
 	var mode = 0;
-	var filters = [ "", "grayscale(100%)", "sepia(100%)", "contrast(200%)", "hue-rotate(90deg)", "invert(100%)", "", "" ];
-	var transforms = [ "", "", "", "", "", "", "scale(-1,1)", "scale(1,-1)" ];
+	var filters = [ "", "grayscale(100%)", "sepia(100%)", "contrast(200%)", "hue-rotate(90deg)", "hue-rotate(-90deg)", "invert(100%)", "blur(5px)", "", "" ];
+	var transforms = [ "", "", "", "", "", "", "", "", "scale(-1,1)", "scale(1,-1)" ];
 	canvas.onmousedown = function() {
 		mode = (mode + 1) % filters.length;
 		canvas.style.filter = filters[mode];
