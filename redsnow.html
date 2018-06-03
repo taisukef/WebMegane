@@ -284,10 +284,15 @@ window.onload = function() {
 	);
 	var g = canvas.getContext("2d");
 	var draw = function() {
-		const cw = window.innerWidth;
-		const ch = window.innerHeight;
-		canvas.width  = cw;
+		var cw = window.innerWidth;
+		var ch = window.innerHeight;
+		if (window.devicePixelRatio > 1) {
+			cw *= 2;
+			ch *= 2;
+		}
+		canvas.width = cw;
 		canvas.height = ch;
+		
 		const vw = video.videoWidth;
 		const vh = video.videoHeight;
 		const cw2 = cw / 2;
