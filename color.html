@@ -42,6 +42,35 @@ window.onload = function() {
 		return res;
 	};
 	
+	var compass = 0;
+	window.addEventListener("deviceorientation", function(e) {
+		// http://w3c.github.io/deviceorientation/spec-source-orientation.html
+		const degtorad = Math.PI / 180; // Degree-to-Radian conversion
+		const _x = e.beta ? e.beta * degtorad : 0; // beta value
+		const _y = e.gamma ? e.gamma * degtorad : 0; // gamma value
+		const _z = e.alpha ? e.alpha * degtorad : 0; // alpha value
+		const cX = Math.cos(_x);
+		const cY = Math.cos(_y);
+		const cZ = Math.cos(_z);
+		const sX = Math.sin(_x);
+		const sY = Math.sin(_y);
+		const sZ = Math.sin(_z);
+		// Calculate Vx and Vy components
+		const Vx = -cZ * sY - sZ * sX * cY;
+		const Vy = -sZ * sY + cZ * sX * cY;
+		// Calculate compass heading
+		var compassHeading = Math.atan(Vx / Vy);
+		// Convert compass heading to use whole unit circle
+		if (Vy < 0) {
+			compassHeading += Math.PI;
+		} else if (Vx < 0) {
+			compassHeading += 2 * Math.PI;
+		}
+		const deg = compassHeading * (180 / Math.PI); // Compass Heading (in degrees)
+//		compass = (deg + 180) % 360; // ??
+		compass = deg;
+	}, false);
+	
 	var g = canvas.getContext("2d");
 	var draw = function() {
 		const cw = window.innerWidth * window.devicePixelRatio;
@@ -111,6 +140,9 @@ window.onload = function() {
 		g.strokeStyle = "rgb(0, 0, 0)";
 		drawText(getNow(), 0.05, 0.05);
 		
+		// compass
+		drawText(Math.floor(compass) + "deg", 0.05, 0.12);
+		
 		g.strokeStyle = "rgb(255, 255, 255)";
 		for (var i = 0; i < 8; i += 4) {
 			var r = pos[2] / 120;
@@ -163,6 +195,7 @@ window.onload = function() {
 		canvas.style.transform = transforms[mode];
 	};
 };
+
 </script>
 <style>
 body {
