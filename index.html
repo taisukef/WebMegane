@@ -32,12 +32,10 @@ window.onload = function() {
 	);
 	var g = canvas.getContext("2d");
 	var draw = function() {
-		var cw = window.innerWidth;
-		var ch = window.innerHeight;
-		if (window.devicePixelRatio > 1) {
-			cw *= 2;
-			ch *= 2;
-		}
+		const cw = window.innerWidth * window.devicePixelRatio;
+		const ch = window.innerHeight * window.devicePixelRatio;
+		canvas.width = cw;
+		canvas.height = ch;
 		canvas.width = cw;
 		canvas.height = ch;
 		
