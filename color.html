@@ -8,6 +8,45 @@
 </head>
 <script src="fukuno.js"></script>
 <script>"use strict";
+
+var COLOR = [
+[ 0xFFD400, "黄色" ],
+[ 0xF58220, "橙" ],
+[ 0xFEDCBD, "肌色" ],
+[ 0x864A2B, "茶色" ],
+[ 0xED1A3D, "赤" ],
+[ 0xF58F98, "桃色" ],
+[ 0x8B52A1, "紫" ],
+[ 0xAFDFE4, "水色" ],
+[ 0xB2D235, "黄緑" ],
+[ 0x008000, "緑" ],
+[ 0x0067C0, "青" ],
+[ 0x2A2A2A, "黒" ],
+];
+var getNearColor = function(rgb) {
+	var r = rgb >> 16;
+	var g = (rgb >> 8) & 0xff;
+	var b = rgb & 0xff;
+	var min = 100000;
+	var nmin = 0;
+	for (var i = 0; i < COLOR.length; i++) {
+		var c = COLOR[i][0];
+		var r2 = c >> 16;
+		var g2 = (c >> 8) & 0xff;
+		var b2 = c & 0xff;
+		var dif = Math.abs(r - r2) + Math.abs(g - g2) + Math.abs(b - b2);
+		if (dif < min) {
+			min = dif;
+			nmin = i;
+		}
+	}
+	return COLOR[nmin];
+};
+var num2color = function(col) {
+	var s = "00000" + col.toString(16);
+	return "#" + s.substring(s.length - 6);
+};
+
 window.onload = function() {
 	const USE_CAMERA_FRONT = false;
 //	var videoop = USE_CAMERA_FRONT ? true : { facingMode : { exact : "environment" } };
@@ -159,9 +198,14 @@ window.onload = function() {
 				sum[j] += data.data[i * 4 + j];
 			}
 		}
+		var ncol = 0;
+		for (var i = 0; i < 3; i++) {
+			sum[i] = Math.floor(sum[i] / 9);
+			ncol += sum[i] << (16 - 8 * i);
+		}
 		var col = "#";
 		for (var i = 0; i < 3; i++) {
-			var val = Math.floor(sum[i] / 9);
+			var val = Math.floor(sum[i]);
 			var h = val.toString(16);
 			if (h.length < 2) {
 				col += "0";
@@ -181,6 +225,16 @@ window.onload = function() {
 		g.fillStyle = "rgb(255, 255, 255)";
 		g.strokeStyle = "rgb(0, 0, 0)";
 		drawText(col, 0.95, 0.05);
+		
+		var nearcol = getNearColor(ncol);
+		g.textAlign = "center";
+		g.fillStyle = num2color(nearcol[0].toString(16));
+		fillRect(0.8, 0.18 + 0.17, 0.15, 0.07);
+		g.strokeStyle = "rgb(255, 255, 255)";
+		g.fillStyle = "rgb(255, 255, 255)";
+		drawText(nearcol[1], 0.95 - 0.15 / 2, 0.35);
+		g.fillStyle = "rgb(0, 0, 0)";
+//		drawText(num2color(ncol), 0.95 - 0.15 / 2, 0.55);
 		
 		requestAnimationFrame(draw);
 	};
