@@ -13,7 +13,7 @@ colorsight (AR)
 https://taisukef.github.io/WebMegane/color.html  
 http://fukuno.jig.jp/2140  
 
-qrdetector (AR)
+qrdetector (AR)  
 https://taisukef.github.io/WebMegane/qrdetector.html  
 http://fukuno.jig.jp/2183  
 https://github.com/cozmo/jsQR  
