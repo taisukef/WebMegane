@@ -11,6 +11,9 @@
 <script src="fukuno.js"></script>
 <script src="js/jsQR.js"></script>
 <script>"use strict";
+
+var detectlink = null;
+
 window.onload = function() {
 	const USE_CAMERA_FRONT = false;
 //	var videoop = USE_CAMERA_FRONT ? true : { facingMode : { exact : "environment" } };
@@ -129,19 +132,19 @@ window.onload = function() {
 			g.fillStyle = "rgb(255, 255, 255)";
 			g.strokeStyle = "rgb(0, 0, 0)";
 			drawText(qrcode.data, (x + fh) / vw, y / vh);
+			
+			if (qrcode.data.startsWith("http://") || qrcode.data.startsWith("https://"))
+				detectlink = qrcode.data;
 		}
 		
 		requestAnimationFrame(draw);
 	};
 	draw();
 	
-	var mode = 0;
-	var filters = [ "", "grayscale(100%)", "sepia(100%)", "contrast(200%)", "hue-rotate(90deg)", "hue-rotate(-90deg)", "invert(100%)", "blur(5px)", "", "" ];
-	var transforms = [ "", "", "", "", "", "", "", "", "scale(-1,1)", "scale(1,-1)" ];
 	canvas.onmousedown = function() {
-		mode = (mode + 1) % filters.length;
-		canvas.style.filter = filters[mode];
-		canvas.style.transform = transforms[mode];
+		if (detectlink) {
+			document.location.href = detectlink;
+		}
 	};
 };
 </script>
