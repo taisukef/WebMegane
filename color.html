@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8"/>
 <title>colorsight - WebMegane</title>
+<meta property="og:image" content="color.jpg">
+<link rel="apple-touch-icon" href="color.jpg"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no"/>
 <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
 </head>
@@ -111,6 +113,11 @@ window.onload = function() {
 	}, false);
 	
 	var g = canvas.getContext("2d");
+	var cnt = 0;
+	// color
+	var sum = [ 0, 0, 0 ];
+	var ncol = 0;
+
 	var draw = function() {
 		const cw = window.innerWidth * window.devicePixelRatio;
 		const ch = window.innerHeight * window.devicePixelRatio;
@@ -182,6 +189,7 @@ window.onload = function() {
 		// compass
 		drawText(Math.floor(compass) + "deg", 0.05, 0.12);
 		
+		// color
 		g.strokeStyle = "rgb(255, 255, 255)";
 		for (var i = 0; i < 8; i += 4) {
 			var r = pos[2] / 120;
@@ -191,17 +199,19 @@ window.onload = function() {
 		}
 		var ox = pos[0] + pos[2] / 2;
 		var oy = pos[1] + pos[3] / 2;
-		var data = g.getImageData(ox - 1, oy - 1, 3, 3);
-		var sum = [ 0, 0, 0 ];
-		for (var i = 0; i < 9; i++) {
-			for (var j = 0; j < 3; j++) {
-				sum[j] += data.data[i * 4 + j];
+		if (cnt % 30 == 0) {
+			sum = [ 0, 0, 0 ];
+			ncol = 0;
+			var data = g.getImageData(ox - 1, oy - 1, 3, 3);
+			for (var i = 0; i < 9; i++) {
+				for (var j = 0; j < 3; j++) {
+					sum[j] += data.data[i * 4 + j];
+				}
 			}
-		}
-		var ncol = 0;
-		for (var i = 0; i < 3; i++) {
-			sum[i] = Math.floor(sum[i] / 9);
-			ncol += sum[i] << (16 - 8 * i);
+			for (var i = 0; i < 3; i++) {
+				sum[i] = Math.floor(sum[i] / 9);
+				ncol += sum[i] << (16 - 8 * i);
+			}
 		}
 		var col = "#";
 		for (var i = 0; i < 3; i++) {
@@ -236,6 +246,7 @@ window.onload = function() {
 		g.fillStyle = "rgb(0, 0, 0)";
 //		drawText(num2color(ncol), 0.95 - 0.15 / 2, 0.55);
 		
+		cnt++;
 		requestAnimationFrame(draw);
 	};
 	draw();

@@ -2,13 +2,14 @@
 <html>
 <head>
 <meta charset="UTF-8"/>
-<title>WebMegane</title>
-<meta property="og:image" content="webmegane.jpg">
-<link rel="apple-touch-icon" href="webmegane.jpg"/>
+<title>qrdetector - WebMegane</title>
+<meta property="og:image" content="qrdetector.jpg">
+<link rel="apple-touch-icon" href="qrdetector.jpg"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no"/>
 <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
 </head>
 <script src="fukuno.js"></script>
+<script src="js/jsQR.js"></script>
 <script>"use strict";
 window.onload = function() {
 	const USE_CAMERA_FRONT = false;
@@ -34,6 +35,10 @@ window.onload = function() {
 	);
 	var g = canvas.getContext("2d");
 	var draw = function() {
+		if (video.readyState != video.HAVE_ENOUGH_DATA) { //  || video.videoWidth == 0) {
+			requestAnimationFrame(draw);
+			return;
+		}
 		const cw = window.innerWidth * window.devicePixelRatio;
 		const ch = window.innerHeight * window.devicePixelRatio;
 		canvas.width = cw;
@@ -49,31 +54,83 @@ window.onload = function() {
 		const fitwidth = true; // force fit width
 //		const fitwidth = false; // force fit height
 		
+		var pos = null;
 		if (fitwidth) {
 			const vh2 = vw * caspect;
 			if (vh2 > vh) {
 				const cy = (vh2 - vh) / 2 / (vw / cw2);
 				const ch2 = cw2 * vaspect;
-				g.drawImage(video, 0, 0, vw, vh, 0, cy, cw2, ch2);
-				g.drawImage(video, 0, 0, vw, vh, cw2, cy, cw2, ch2);
+				pos = [
+					0, 0, vw, vh, 0, cy, cw2, ch2,
+					0, 0, vw, vh, cw2, cy, cw2, ch2
+				];
 			} else {
 				const vy = (vh - vh2) / 2;
-				g.drawImage(video, 0, vy, vw, vh2, 0, 0, cw2, ch);
-				g.drawImage(video, 0, vy, vw, vh2, cw2, 0, cw2, ch);
+				pos = [
+					0, vy, vw, vh2, 0, 0, cw2, ch,
+					0, vy, vw, vh2, cw2, 0, cw2, ch
+				];
+				qrcode = detectQR(cw2, 0, cw2, ch);
 			}
 		} else {
 			const vw2 = vh / caspect;
 			if (vw2 > vw) {
 				const cx = (vw2 - vw) / 2 / (vh / ch);
 				const cw3 = ch / vaspect;
-				g.drawImage(video, 0, 0, vw, vh, cx, 0, cw3, ch);
-				g.drawImage(video, 0, 0, vw, vh, cw2 + cx, 0, cw3, ch);
+				pos = [
+					0, 0, vw, vh, cx, 0, cw3, ch,
+					0, 0, vw, vh, cw2 + cx, 0, cw3, ch
+				];
 			} else {
 				const vx = (vw - vw2) / 2;
-				g.drawImage(video, vx, 0, vw2, vh, 0, 0, cw2, ch);
-				g.drawImage(video, vx, 0, vw2, vh, cw2, 0, cw2, ch);
+				pos = [
+					vx, 0, vw2, vh, 0, 0, cw2, ch,
+					vx, 0, vw2, vh, cw2, 0, cw2, ch
+				];
 			}
 		}
+		g.drawImage(video, pos[0], pos[1], pos[2], pos[3], pos[4], pos[5], pos[6], pos[7]);
+		g.drawImage(video, pos[8], pos[9], pos[10], pos[11], pos[12], pos[13], pos[14], pos[15]);
+		
+		var drawText = function(s, x, y) {
+			for (var i = 4; i < 16; i += 8) {
+				g.strokeText(s, pos[i] + x * pos[i + 2], pos[i + 1] + y * pos[i + 3]);
+				g.fillText(s, pos[i] + x * pos[i + 2], pos[i + 1] + y * pos[i + 3]);
+			}
+		};
+		var fillRect = function(x, y, w, h) {
+			for (var i = 4; i < 16; i += 8) {
+				g.fillRect(pos[i] + x * pos[i + 2], pos[i + 1] + y * pos[i + 3], w * pos[i + 2], h * pos[i + 3]);
+			}
+		};
+		
+		var imagedata = g.getImageData(pos[4], pos[5], pos[6], pos[7]);
+		const qrcode = jsQR(imagedata.data, imagedata.width, imagedata.height);
+		if (qrcode) {
+			// qrcode.location topLeftCorner, topRightCorner, bottomLeftCorner, bottomRightCorner
+			// qrcode.data
+//			console.log("Found QR code", qrcode);
+			
+			var lc = qrcode.location;
+			/*
+			const x = (lc.topLeftCorner.x + lc.topRightCorner.x + lc.bottomLeftCorner.x + lc.bottomRightCorner.x) / 4;
+			const y = (lc.topLeftCorner.y + lc.topRightCorner.y + lc.bottomLeftCorner.y + lc.bottomRightCorner.y) / 4;
+			*/
+			const x = (lc.topRightCorner.x + lc.bottomRightCorner.x) / 2;
+			const y = (lc.topLeftCorner.y + lc.topRightCorner.y + lc.bottomLeftCorner.y + lc.bottomRightCorner.y) / 4;
+			const vw = pos[6];
+			const vh = pos[7];
+			
+			// qrcode
+			var fh = pos[2] / 40;
+			g.font = fh + "px sans-serif";
+			g.textAlign = "left";
+			 g.textBaseline = "center";
+			g.fillStyle = "rgb(255, 255, 255)";
+			g.strokeStyle = "rgb(0, 0, 0)";
+			drawText(qrcode.data, (x + fh) / vw, y / vh);
+		}
+		
 		requestAnimationFrame(draw);
 	};
 	draw();
