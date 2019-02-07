@@ -9,8 +9,10 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
 </head>
 <script src="fukuno.js"></script>
+<script src="colorjis.js"></script>
 <script>"use strict";
 
+/* // -> use colorjis.js
 var COLOR = [
 [ 0xFFD400, "黄色" ],
 [ 0xF58220, "橙" ],
@@ -25,8 +27,10 @@ var COLOR = [
 [ 0x0067C0, "青" ],
 [ 0x2A2A2A, "黒" ],
 ];
+*/
+
 var getNearColor = function(rgb) {
-	var r = rgb >> 16;
+	var r = (rgb >> 16) & 0xff;
 	var g = (rgb >> 8) & 0xff;
 	var b = rgb & 0xff;
 	var min = 100000;
@@ -50,6 +54,8 @@ var num2color = function(col) {
 };
 
 window.onload = function() {
+	
+
 	const USE_CAMERA_FRONT = false;
 //	var videoop = USE_CAMERA_FRONT ? true : { facingMode : { exact : "environment" } };
 //	var videoop = USE_CAMERA_FRONT ? true : { facingMode : { ideal : "environment" } };
@@ -237,12 +243,14 @@ window.onload = function() {
 		drawText(col, 0.95, 0.05);
 		
 		var nearcol = getNearColor(ncol);
+		var fh = pos[2] / 60;
+		g.font = fh + "px Courier";
 		g.textAlign = "center";
 		g.fillStyle = num2color(nearcol[0].toString(16));
 		fillRect(0.8, 0.18 + 0.17, 0.15, 0.07);
 		g.strokeStyle = "rgb(255, 255, 255)";
 		g.fillStyle = "rgb(255, 255, 255)";
-		drawText(nearcol[1], 0.95 - 0.15 / 2, 0.35);
+		drawText(nearcol[1], 0.95 - 0.15 / 2, 0.375);
 		g.fillStyle = "rgb(0, 0, 0)";
 //		drawText(num2color(ncol), 0.95 - 0.15 / 2, 0.55);
 		
