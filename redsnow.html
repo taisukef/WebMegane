@@ -274,14 +274,21 @@ window.onload = function() {
 	const medias = { audio: false, video: videoop };
 	
 //	dump(navigator.mediaDevices.getSupportedConstraints());
-	
-	navigator.getUserMedia(medias, function(stream) {
+	navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia
+	if (navigator.getUserMedia) {
+		navigator.getUserMedia(medias, function(stream) {
+				video.srcObject = stream;
+			}, function(err) {
+				alert(err);
+			}
+		)
+	} else {
+		navigator.mediaDevices.getUserMedia(medias).then(function(stream) {
 			video.srcObject = stream;
-		},
-		function(err) {
+		}).catch(function(err) {
 			alert(err);
-		}
-	);
+		})
+	}
 	var g = canvas.getContext("2d");
 	var draw = function() {
 		const cw = window.innerWidth * window.devicePixelRatio;

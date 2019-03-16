@@ -61,16 +61,23 @@ window.onload = function() {
 //		height: { min: 480, ideal: 720, max: 1080 }
 	};
 	const medias = { audio: false, video: videoop };
-	
-//	dump(navigator.mediaDevices.getSupportedConstraints());
-	
-	navigator.getUserMedia(medias, function(stream) {
+
+	//	dump(navigator.mediaDevices.getSupportedConstraints());
+	navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia
+	if (navigator.getUserMedia) {
+		navigator.getUserMedia(medias, function(stream) {
+				video.srcObject = stream;
+			}, function(err) {
+				alert(err);
+			}
+		)
+	} else {
+		navigator.mediaDevices.getUserMedia(medias).then(function(stream) {
 			video.srcObject = stream;
-		},
-		function(err) {
+		}).catch(function(err) {
 			alert(err);
-		}
-	);
+		})
+	}
 	
 	var getNow =  function() {
 		const d = new Date();
