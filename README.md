@@ -22,5 +22,9 @@ blacknwhite
 https://taisukef.github.io/WebMegane/blacknwhite.html  
 https://fukuno.jig.jp/2406  
 
+delayglass  
+https://taisukef.github.io/WebMegane/delay.html  
+https://fukuno.jig.jp/2426  
+
 # license  
 CC BY fukuno.jig.jp  
