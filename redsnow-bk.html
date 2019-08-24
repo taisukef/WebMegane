@@ -51,6 +51,8 @@ original
 	 * Initialize
 	 */
 	function init() {
+		
+		
 		// シーン
 		scene = new THREE.Scene();
 
@@ -61,9 +63,8 @@ original
 		scene.add(camera);
 
 		// レンダラー
-		renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-		//renderer.setClearColor(0x0);
-		renderer.setClearColor(0x000000, 0); // the default
+		renderer = new THREE.WebGLRenderer({antialias: true});
+		renderer.setClearColor(0x0);
 		renderer.setSize(window.innerWidth, window.innerHeight);
 
 		// ピクセルレートを設定
@@ -223,12 +224,14 @@ original
 	 * 更新します。
 	 */
 	function update(dt) {
-		if (edgesPool) {
+		if(edgesPool) {
 			for (var i = 0; i < edgesPool.length; i++) {
 				edgesPool[i].updateMatrix();
 			}
 		}
+
 		camera.updateProjectionMatrix();
+
 		controls.update(dt);
 	}
 
@@ -253,6 +256,7 @@ original
 			container.webkitRequestFullscreen();
 		}
 	}
+
 	window.addEventListener("DOMContentLoaded", init, false);
 })();
 
@@ -367,7 +371,7 @@ body {
 	position: absolute;
 	top: 0;
 	left: 0;
-	x-opacity: 0.5;
+	opacity: 0.5;
 }
 </style>
 </head>
