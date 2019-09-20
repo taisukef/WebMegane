@@ -51,6 +51,13 @@ original
 	 * Initialize
 	 */
 	function init() {
+		// パーミッション for iOS13
+		if (DeviceMotionEvent && DeviceMotionEvent.requestPermission && typeof DeviceMotionEvent.requestPermission === 'function') {
+    	DeviceMotionEvent.requestPermission()
+  	}
+ 	 	if (DeviceOrientationEvent && DeviceOrientationEvent.requestPermission && typeof DeviceOrientationEvent.requestPermission === 'function') {
+	    DeviceOrientationEvent.requestPermission();
+	  }		
 		// シーン
 		scene = new THREE.Scene();
 

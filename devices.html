@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<title>WebMegane</title>
+<meta property="og:image" content="webmegane.jpg">
+<link rel="apple-touch-icon" href="webmegane.jpg"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+</head>
+<script src="fukuno.js"></script>
+<script>"use strict"
+window.onload = async function() {
+//	dump(navigator.mediaDevices.getSupportedConstraints())
+	console.log(navigator.mediaDevices.getSupportedConstraints())
+	/*
+aspectRatio: true
+autoGainControl: true
+brightness: true
+channelCount: true
+colorTemperature: true
+contrast: true
+deviceId: true
+echoCancellation: true
+exposureCompensation: true
+exposureMode: true
+exposureTime: true
+facingMode: true
+focusDistance: true
+focusMode: true
+frameRate: true
+groupId: true
+height: true
+iso: true
+latency: true
+noiseSuppression: true
+pointsOfInterest: true
+resizeMode: true
+sampleRate: true
+sampleSize: true
+saturation: true
+sharpness: true
+torch: true
+whiteBalanceMode: true
+width: true
+zoom: true
+
+iOS13　iPhone 11
+aspectRatio: true
+deviceId: true
+echoCancellation: false
+facingMode: true
+frameRate: true
+groupId: false
+height: true
+sampleRate: false
+sampleSize: false
+volume: true
+width: true
+
+enumerateDevices() .. iPhone11 とれない
+0 MediaDeviceInfo {deviceId: "EF604441D5B8C7EE123D79BA81183DE1DCEEDD60", kind: "audioinput", label: "iPhone マイク", groupId: "", toJSON: function}
+1 MediaDeviceInfo {deviceId: "5F12FFE43BC9B6E74DA1AA977BC416C9AE740FC3", kind: "videoinput", label: "前面側カメラ", groupId: "", toJSON: function}
+2 MediaDeviceInfo {deviceId: "DAE06B09B4B45610516BADF1F6A5A77A7358D1F3", kind: "videoinput", label: "背面カメラ", groupId: "", toJSON: function}
+
+*/
+
+
+	var videoop = true
+	const medias = { audio: false, video: true }
+	
+	const camera = await navigator.mediaDevices.getUserMedia(medias)
+	//dump(camera)
+	video.srcObject = camera
+
+}
+</script>
+<style>
+body {
+	margin: 0;
+	background-color: black;
+}
+#video {
+	display: block;
+	width: 100%;
+	x-transform: scale(0.01);
+}
+#canvas {
+	z-index: 3;
+	display: block;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+}
+#debug {
+	position: absolute;
+	top: 0;
+	left: 0;
+	background-color: rgb(1, 1, 1, 0.5);
+	z-index: 2;
+	color: white;
+}
+</style>
+<body>
+<canvas id="canvas"></canvas>
+<video id="video" autoplay playsinline></video>
+<div id=debug></div>
+</body>
+</html>
