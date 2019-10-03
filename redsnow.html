@@ -51,7 +51,7 @@ original
 	 * Initialize
 	 */
 	function init() {
-		// パーミッション for iOS13
+		// to user motion sensor, orientation sensor for iOS13
 		document.body.onclick = function() {
 			if (DeviceMotionEvent && DeviceMotionEvent.requestPermission && typeof DeviceMotionEvent.requestPermission === 'function') {
 	    	DeviceMotionEvent.requestPermission()
