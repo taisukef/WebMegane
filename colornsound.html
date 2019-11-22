@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<title>colornsound - WebMegane</title>
+<meta property="og:image" content="color.jpg">
+<link rel="apple-touch-icon" href="color.jpg"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+</head>
+<script src="fukuno.js"></script>
+<script src="colorjis.js"></script>
+<script src="fft.js"></script>
+<script>"use strict";
+
+/* // -> use colorjis.js
+var COLOR = [
+[ 0xFFD400, "黄色" ],
+[ 0xF58220, "橙" ],
+[ 0xFEDCBD, "肌色" ],
+[ 0x864A2B, "茶色" ],
+[ 0xED1A3D, "赤" ],
+[ 0xF58F98, "桃色" ],
+[ 0x8B52A1, "紫" ],
+[ 0xAFDFE4, "水色" ],
+[ 0xB2D235, "黄緑" ],
+[ 0x008000, "緑" ],
+[ 0x0067C0, "青" ],
+[ 0x2A2A2A, "黒" ],
+];
+*/
+
+var getNearColor = function(rgb) {
+	var r = (rgb >> 16) & 0xff;
+	var g = (rgb >> 8) & 0xff;
+	var b = rgb & 0xff;
+	var min = 100000;
+	var nmin = 0;
+	for (var i = 0; i < COLOR.length; i++) {
+		var c = COLOR[i][0];
+		var r2 = c >> 16;
+		var g2 = (c >> 8) & 0xff;
+		var b2 = c & 0xff;
+		var dif = Math.abs(r - r2) + Math.abs(g - g2) + Math.abs(b - b2);
+		if (dif < min) {
+			min = dif;
+			nmin = i;
+		}
+	}
+	return COLOR[nmin];
+};
+var num2color = function(col) {
+	var s = "00000" + col.toString(16);
+	return "#" + s.substring(s.length - 6);
+};
+
+let fft
+
+window.onload = function() {
+	document.body.onclick = function() {
+		document.body.onclick = null
+		message.textContent = ''
+		init()
+	}
+}
+
+const init = async function() {
+	// for iOS13
+	/*
+	if (DeviceMotionEvent && DeviceMotionEvent.requestPermission && typeof DeviceMotionEvent.requestPermission === 'function') {
+		DeviceMotionEvent.requestPermission()
+	}
+	*/
+	if (DeviceOrientationEvent && DeviceOrientationEvent.requestPermission && typeof DeviceOrientationEvent.requestPermission === 'function') {
+		DeviceOrientationEvent.requestPermission();
+	}
+
+	fft = new FFT()
+	await fft.init(13)
+	init2()
+}
+const init2 = function() {
+	const USE_CAMERA_FRONT = false;
+//	var videoop = USE_CAMERA_FRONT ? true : { facingMode : { exact : "environment" } };
+//	var videoop = USE_CAMERA_FRONT ? true : { facingMode : { ideal : "environment" } };
+	var videoop = USE_CAMERA_FRONT ? true : {
+		facingMode : { ideal : "environment" },
+		width: { min: 640, ideal: 1920 },
+		height: { min: 480, ideal: 1080 }
+//		width: { min: 640, ideal: 1280, max: 1920 },
+//		height: { min: 480, ideal: 720, max: 1080 }
+	};
+	const medias = { audio: false, video: videoop };
+	
+//	dump(navigator.mediaDevices.getSupportedConstraints());
+	navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia
+	if (navigator.getUserMedia) {
+		navigator.getUserMedia(medias, function(stream) {
+				video.srcObject = stream;
+			}, function(err) {
+				alert(err);
+			}
+		)
+	} else {
+		navigator.mediaDevices.getUserMedia(medias).then(function(stream) {
+			video.srcObject = stream;
+		}).catch(function(err) {
+			alert(err);
+		})
+	}
+	
+	var getNow = function() {
+		const d = new Date();
+		var fix = function(n) {
+			if (n < 10)
+				return "0" + n;
+			return n;
+		};
+		const res = fix(d.getHours()) + ":" + fix(d.getMinutes()) + ":" + fix(d.getSeconds());
+		return res;
+	};
+	
+	var compass = 0;
+	window.addEventListener("deviceorientation", function(e) {
+		// http://w3c.github.io/deviceorientation/spec-source-orientation.html
+		const degtorad = Math.PI / 180; // Degree-to-Radian conversion
+		const _x = e.beta ? e.beta * degtorad : 0; // beta value
+		const _y = e.gamma ? e.gamma * degtorad : 0; // gamma value
+		const _z = e.alpha ? e.alpha * degtorad : 0; // alpha value
+		const cX = Math.cos(_x);
+		const cY = Math.cos(_y);
+		const cZ = Math.cos(_z);
+		const sX = Math.sin(_x);
+		const sY = Math.sin(_y);
+		const sZ = Math.sin(_z);
+		// Calculate Vx and Vy components
+		const Vx = -cZ * sY - sZ * sX * cY;
+		const Vy = -sZ * sY + cZ * sX * cY;
+		// Calculate compass heading
+		var compassHeading = Math.atan(Vx / Vy);
+		// Convert compass heading to use whole unit circle
+		if (Vy < 0) {
+			compassHeading += Math.PI;
+		} else if (Vx < 0) {
+			compassHeading += 2 * Math.PI;
+		}
+		const deg = compassHeading * (180 / Math.PI); // Compass Heading (in degrees)
+//		compass = (deg + 180) % 360; // ??
+		compass = deg;
+	}, false);
+	
+	var g = canvas.getContext("2d");
+	var cnt = 0;
+	// color
+	var sum = [ 0, 0, 0 ];
+	var ncol = 0;
+
+
+	var draw = function() {
+		const cw = window.innerWidth * window.devicePixelRatio;
+		const ch = window.innerHeight * window.devicePixelRatio;
+		canvas.width = cw;
+		canvas.height = ch;
+		
+		const vw = video.videoWidth;
+		const vh = video.videoHeight;
+		const cw2 = cw / 2;
+		const caspect = ch / cw2;
+		const vaspect = vh / vw;
+		
+/*		const fitwidth = caspect < vaspect; // auto fit screen */
+		const fitwidth = true; // force fit width
+//		const fitwidth = false; // force fit height
+		
+		var pos = [];
+		if (fitwidth) {
+			const vh2 = vw * caspect;
+			if (vh2 > vh) {
+				const cy = (vh2 - vh) / 2 / (vw / cw2);
+				const ch2 = cw2 * vaspect;
+				g.drawImage(video, 0, 0, vw, vh, 0, cy, cw2, ch2);
+				g.drawImage(video, 0, 0, vw, vh, cw2, cy, cw2, ch2);
+				pos = [ 0, cy, cw2, ch2, cw2, cy, cw2, ch2 ];
+			} else {
+				const vy = (vh - vh2) / 2;
+				g.drawImage(video, 0, vy, vw, vh2, 0, 0, cw2, ch);
+				g.drawImage(video, 0, vy, vw, vh2, cw2, 0, cw2, ch);
+				pos = [ 0, 0, cw2, ch, cw2, 0, cw2, ch ];
+			}
+		} else {
+			const vw2 = vh / caspect;
+			if (vw2 > vw) {
+				const cx = (vw2 - vw) / 2 / (vh / ch);
+				const cw3 = ch / vaspect;
+				g.drawImage(video, 0, 0, vw, vh, cx, 0, cw3, ch);
+				g.drawImage(video, 0, 0, vw, vh, cw2 + cx, 0, cw3, ch);
+				pos = [ cx, 0, cw3, ch, cw2 + cx, 0, cw3, ch ];
+			} else {
+				const vx = (vw - vw2) / 2;
+				g.drawImage(video, vx, 0, vw2, vh, 0, 0, cw2, ch);
+				g.drawImage(video, vx, 0, vw2, vh, cw2, 0, cw2, ch);
+				pos = [ 0, 0, cw2, ch, cw2, 0, cw2, ch ];
+			}
+		}
+		
+		var drawText = function(s, x, y) {
+			for (var i = 0; i < 8; i += 4) {
+				g.strokeText(s, pos[i] + x * pos[i + 2], pos[i + 1] + y * pos[i + 3]);
+				g.fillText(s, pos[i] + x * pos[i + 2], pos[i + 1] + y * pos[i + 3]);
+			}
+		};
+		var fillRect = function(x, y, w, h) {
+			for (var i = 0; i < 8; i += 4) {
+				g.fillRect(pos[i] + x * pos[i + 2], pos[i + 1] + y * pos[i + 3], w * pos[i + 2], h * pos[i + 3]);
+			}
+		};
+		
+		// clock
+		var fh = pos[2] / 30;
+		g.font = fh + "px sans-serif";
+		g.textAlign = "left";
+ 		g.textBaseline = "top";
+		g.fillStyle = "rgb(255, 255, 255)";
+		g.strokeStyle = "rgb(0, 0, 0)";
+		drawText(getNow(), 0.05, 0.05);
+		
+		// compass
+		drawText(Math.floor(compass) + "deg", 0.05, 0.12);
+		
+		// color
+		g.strokeStyle = "rgb(255, 255, 255)";
+		for (var i = 0; i < 8; i += 4) {
+			var r = pos[2] / 120;
+			g.beginPath();
+			g.arc(pos[i] + pos[i + 2] / 2, pos[i + 1] + pos[i + 3] / 2, r, 0, 2 * Math.PI);
+			g.stroke();
+		}
+		var ox = pos[0] + pos[2] / 2;
+		var oy = pos[1] + pos[3] / 2;
+		if (cnt % 30 == 0) {
+			sum = [ 0, 0, 0 ];
+			ncol = 0;
+			var data = g.getImageData(ox - 1, oy - 1, 3, 3);
+			for (var i = 0; i < 9; i++) {
+				for (var j = 0; j < 3; j++) {
+					sum[j] += data.data[i * 4 + j];
+				}
+			}
+			for (var i = 0; i < 3; i++) {
+				sum[i] = Math.floor(sum[i] / 9);
+				ncol += sum[i] << (16 - 8 * i);
+			}
+		}
+		var col = "#";
+		for (var i = 0; i < 3; i++) {
+			var val = Math.floor(sum[i]);
+			var h = val.toString(16);
+			if (h.length < 2) {
+				col += "0";
+			}
+			col += h;
+			
+			g.fillStyle = [ "rgb(255,0,0)", "rgb(0,255,0)", "rgb(0,0,255)" ][i];
+			fillRect(0.8, 0.18 + i * 0.05, 0.15 * val / 255, 0.05);
+		}
+		g.fillStyle = col;
+		fillRect(0.8, 0.12, 0.15, 0.05);
+		
+		var fh = pos[2] / 30;
+		g.font = fh + "px Courier";
+		g.textAlign = "right";
+ 		g.textBaseline = "top";
+		g.fillStyle = "rgb(255, 255, 255)";
+		g.strokeStyle = "rgb(0, 0, 0)";
+		drawText(col, 0.95, 0.05);
+		
+		var nearcol = getNearColor(ncol);
+		var fh = pos[2] / 60;
+		g.font = fh + "px Courier";
+		g.textAlign = "center";
+		g.fillStyle = num2color(nearcol[0].toString(16));
+		fillRect(0.8, 0.18 + 0.17, 0.15, 0.07);
+		g.strokeStyle = "rgb(255, 255, 255)";
+		g.fillStyle = "rgb(255, 255, 255)";
+		drawText(nearcol[1], 0.95 - 0.15 / 2, 0.375);
+		g.fillStyle = "rgb(0, 0, 0)";
+//		drawText(num2color(ncol), 0.95 - 0.15 / 2, 0.55);
+
+		// fft
+	//	const tone = fft.getScale()
+		//console.log(tone)
+		const freqs = fft.getFreqs()
+		const formant = fft.getFormant(freqs)
+//		console.log(formant.length)
+		if (formant.length > 0) {
+			//console.log(formant[0])
+			const tone = fft.getScaleFromFreq(formant[0][0])
+			//if (tone) {
+			const fh = pos[2] / 15;
+			g.font = fh + "px Courier";
+			g.textAlign = "center";
+			g.fillStyle = "rgb(0, 0, 0)"
+//			fillRect(0.5, 0.6, 0.2, 0.2)
+			g.strokeStyle = "rgb(255, 255, 255)";
+			g.fillStyle = "rgb(255, 255, 255)";
+			drawText(tone, 0.5, 0.7);
+
+			let x = 0
+			const ndiv = freqs.length / 4
+			const bw = 1 / ndiv
+			for (let i = 0; i < ndiv; i++) {
+				const n = freqs[i]
+				g.fillStyle = 'hsl(' + (180 + n) + ',100%,60%)'
+				const bh = n / 400
+				fillRect(x, 1 - bh, bw, bh)
+				x += bw
+			}
+		}
+		
+		cnt++;
+		requestAnimationFrame(draw);
+	};
+	draw();
+	
+	var mode = 0;
+	var filters = [ "", "grayscale(100%)", "sepia(100%)", "contrast(200%)", "hue-rotate(90deg)", "hue-rotate(-90deg)", "invert(100%)", "blur(5px)", "", "" ];
+	var transforms = [ "", "", "", "", "", "", "", "", "scale(-1,1)", "scale(1,-1)" ];
+	canvas.onmousedown = function() {
+		mode = (mode + 1) % filters.length;
+		canvas.style.filter = filters[mode];
+		canvas.style.transform = transforms[mode];
+	};
+};
+
+</script>
+<style>
+body {
+	margin: 0;
+	background-color: black;
+}
+#video {
+	display: block;
+	width: 100%;
+	transform: scale(0.01);
+}
+#canvas {
+	z-index: 3;
+	display: block;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+}
+#message {
+	position: absolute;
+	top: 0;
+	left: 0;
+	font-size: 10vw;
+	color: white;
+}
+#debug {
+	position: absolute;
+	top: 0;
+	left: 0;
+	background-color: rgb(1, 1, 1, 0.5);
+	z-index: 2;
+	color: white;
+}
+</style>
+<body>
+<canvas id="canvas"></canvas>
+<video id="video" autoplay playsinline></video>
+<div id=message>tap to start</div>
+<div id=debug></div>
+</body>
+</html>

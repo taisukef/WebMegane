@@ -26,5 +26,9 @@ delayglass
 https://taisukef.github.io/WebMegane/delay.html  
 https://fukuno.jig.jp/2426  
 
+colornsound (AR)  
+https://taisukef.github.io/WebMegane/colornsound.html  
+https://fukuno.jig.jp/2678  
+
 # license  
 CC BY fukuno.jig.jp  
