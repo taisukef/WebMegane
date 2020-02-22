@@ -30,5 +30,9 @@ colornsound (AR)
 https://taisukef.github.io/WebMegane/colornsound.html  
 https://fukuno.jig.jp/2678  
 
+hueglass (AR)  
+https://taisukef.github.io/WebMegane/hueglass.html  
+https://fukuno.jig.jp/2767  
+
 # license  
 CC BY fukuno.jig.jp  
